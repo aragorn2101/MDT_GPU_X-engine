@@ -10,6 +10,26 @@
  *  XInput: input array for X-tengine coming directly from F-engine,
  *  FXOutput: output array for the whole FX operation.
  *
+ *  The thread grid is setup using the following:
+ *
+ *  if (Nchannels > MaxThreadsPerBlock)
+ *  {
+ *    NumBlockz = Nchannels / MaxThreadsPerBlock + 1;
+ *    NumThreadx = Nchannels / NumBlockz;
+ *  }
+ *  else
+ *  {
+ *    NumBlockz = 1;
+ *    NumThreadx = Nchannels;
+ *  }
+ *  NumBlockx  = Nelements;
+ *  NumBlocky  = Nelements;
+ *  NumThready = 1;
+ *  NumThreadz = 1;
+ *
+ *  And it is lauched with the following call:
+ *  XEngine<<< dim3(NumBlockx,NumBlocky,NumBlockz), dim3(NumThreadx,NumThready,NumThreadz), ShMemPerBlock >>>(Nchannels, Nspectra, d_XInput, d_FXOutput);
+ *
  */
 __global__ void XEngine(int Nchannels, int Nspectra, cufftComplex *XInput, float2 *FXOutput)
 {
@@ -61,6 +81,23 @@ __global__ void XEngine(int Nchannels, int Nspectra, cufftComplex *XInput, float
  *  Nspectra: total number of spectra within 1 integration time,
  *  XInput: input array for X-tengine coming directly from F-engine,
  *  FXOutput: output array for the whole FX operation.
+ *
+ *  The thread grid is setup using the following:
+ *
+ *  NumThreadx = (int)( MaxShMemPerBlock / ((sizeof(cufftComplex) + sizeof(float2))*Nelements) );
+ *  if (NumThreadx > MaxThreadsPerBlock)
+ *    NumThreadx = MaxThreadsPerBlock;
+ *
+ *  NumThready = 1;
+ *  NumThreadz = 1;
+ *  NumBlockx = (Nchannels/NumThreadx) + ((Nchannels%NumThreadx != 0) ? 1 : 0);
+ *  NumBlocky = Nelements/2 + 1;
+ *  NumBlockz = 1;
+ *
+ *  ShMemPerBlock = (sizeof(cufftComplex) + sizeof(float2)) * Nelements * NumThreadx;
+ *
+ *  And it is lauched with the following call:
+ *  XEngine<<< dim3(NumBlockx,NumBlocky,NumBlockz), dim3(NumThreadx,NumThready,NumThreadz), ShMemPerBlock >>>(Nelements, Nchannels, Nspectra, d_XInput, d_FXOutput);
  *
  */
 __global__ void XEngine(int Nelements, int Nchannels, int Nspectra, cufftComplex *XInput, float2 *FXOutput)
@@ -221,6 +258,20 @@ __global__ void XEngine(int Nelements, int Nchannels, int Nspectra, cufftComplex
  *  Nspectra: total number of spectra within 1 integration time,
  *  XInput: input array for X-tengine coming directly from F-engine,
  *  FXOutput: output array for the whole FX operation.
+ *
+ *  The thread grid is setup using the following:
+ *
+ *  NumThready = 4;
+ *  NumThreadz = 4;
+ *
+ *  NumThreadx = MaxThreadsPerBlock / (NumThready*NumThreadz);  // 64 x 4 x  4
+ *
+ *  NumBlockx = (Nchannels/NumThreadx) + ((Nchannels%NumThreadx == 0) ? 0 : 1);
+ *  NumBlocky = ((Nelements+3)/4) * ((Nelements+3)/4 + 1) / 2;
+ *  NumBlockz = 1;
+ *
+ *  And it is lauched with the following call:
+ *  XEngine<<< dim3(NumBlockx,NumBlocky,NumBlockz), dim3(NumThreadx,NumThready,NumThreadz) >>>(Nelements, Nchannels, Nspectra, d_XInput, d_FXOutput);
  *
  */
 __global__ void XEngine(int Nelements, int Nchannels, int Nspectra, cufftComplex *XInput, float2 *FXOutput)
