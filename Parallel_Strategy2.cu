@@ -39,6 +39,7 @@
  *
  *  NumThready = 1;
  *  NumThreadz = 1;
+ *
  *  NumBlockx = (Nchannels/NumThreadx) + ((Nchannels%NumThreadx != 0) ? 1 : 0);
  *  NumBlocky = Nelements/2 + 1;
  *  NumBlockz = 1;

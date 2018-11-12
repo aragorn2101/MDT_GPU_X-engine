@@ -42,10 +42,10 @@
  *    NumBlockz = 1;
  *    NumThreadx = Nchannels;
  *  }
- *  NumBlockx  = Nelements;
- *  NumBlocky  = Nelements;
  *  NumThready = 1;
  *  NumThreadz = 1;
+ *  NumBlockx  = Nelements;
+ *  NumBlocky  = Nelements;
  *
  *  And it is lauched with the following call:
  *  XEngine<<< dim3(NumBlockx,NumBlocky,NumBlockz), dim3(NumThreadx,NumThready,NumThreadz), ShMemPerBlock >>>(Nchannels, Nspectra, d_XInput, d_FXOutput);

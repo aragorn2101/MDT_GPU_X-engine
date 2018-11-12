@@ -35,10 +35,9 @@
  *
  *  The thread grid is setup using the following:
  *
+ *  NumThreadx = MaxThreadsPerBlock / (NumThready*NumThreadz);  // 64 x 4 x  4
  *  NumThready = 4;
  *  NumThreadz = 4;
- *
- *  NumThreadx = MaxThreadsPerBlock / (NumThready*NumThreadz);  // 64 x 4 x  4
  *
  *  NumBlockx = (Nchannels/NumThreadx) + ((Nchannels%NumThreadx == 0) ? 0 : 1);
  *  NumBlocky = ((Nelements+3)/4) * ((Nelements+3)/4 + 1) / 2;
